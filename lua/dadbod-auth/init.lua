@@ -39,7 +39,7 @@ local function fetch_db_credentials(item_name)
 end
 
 -- Function to set up the database connection with vim-dadbod.
-function setup_db_connection(item_name)
+function M.setup_db_connection(item_name)
 	local creds = fetch_db_credentials(item_name)
 	if not creds then
 		return
