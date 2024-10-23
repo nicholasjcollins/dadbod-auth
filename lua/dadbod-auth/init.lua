@@ -2,7 +2,6 @@ local config = require("dadbod-auth.config")
 local M = {}
 
 local function fetch_db_credentials(item_name)
-	-- Replace `item_name` with the name of your database credentials stored in 1Password
 	local handle = io.popen(
 		"op item get '"
 			.. item_name
@@ -38,7 +37,6 @@ local function fetch_db_credentials(item_name)
 	}
 end
 
--- Function to set up the database connection with vim-dadbod.
 function M.setup_db_connection(item_name)
 	local creds = fetch_db_credentials(item_name)
 	if not creds then
@@ -54,7 +52,6 @@ function M.setup_db_connection(item_name)
 	vim.notify("Connected to the database with vim-dadbod!", vim.log.levels.INFO)
 end
 
--- You can create a Neovim command to trigger the connection setup
 vim.api.nvim_create_user_command("DBConnect", function(opts)
 	M.setup_db_connection(opts.args)
 end, {
