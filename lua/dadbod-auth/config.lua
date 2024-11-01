@@ -1,6 +1,7 @@
 local config = {}
 
 config.options = {
+	account = "unknown",
 	aliases = {},
 }
 
