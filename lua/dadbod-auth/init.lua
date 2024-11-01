@@ -1,6 +1,13 @@
 local config = require("dadbod-auth.config")
 local M = {}
 
+config.options = config.options or {}
+config.options.aliases = config.options.aliases or {}
+
+local function resolve_item_name(alias_or_item)
+	return config.options.aliases[alias_or_item] or alias_or_item
+end
+
 local function fetch_db_credentials(item_name)
 	local handle = io.popen(
 		"op item get '"
@@ -38,7 +45,8 @@ local function fetch_db_credentials(item_name)
 end
 
 function M.setup_db_connection(item_name)
-	local creds = fetch_db_credentials(item_name)
+	local resolved_item_name = resolve_item_name(item_name)
+	local creds = fetch_db_credentials(resolved_item_name)
 	if not creds then
 		return
 	end

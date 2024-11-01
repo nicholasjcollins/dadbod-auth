@@ -1,9 +1,11 @@
-return {
-    options = { 
+local config = {}
 
-    }
-
-    function setup(user_opts)
-        options = vim.tbl_deep_extend("force", options, user_opts or {})
-    end
+config.options = {
+	aliases = {},
 }
+
+function config.setup(user_opts)
+	config.options = vim.tbl_deep_extend("force", config.options, user_opts or {})
+end
+
+return config
