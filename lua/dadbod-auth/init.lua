@@ -9,16 +9,15 @@ local function resolve_item_name(alias_or_item)
 end
 
 local function fetch_db_credentials(item_name)
-	local handle = io.popen(
-		"op item get '"
-			.. item_name
-			.. "' --fields label=type,label=username,label=password,label=dbname,label=host --format json"
-	)
+	local opcmd = "op item get '"
+		.. item_name
+		.. "' --fields label=type,label=username,label=password,label=dbname,label=host --format json"
+	local handle = io.popen(opcmd)
 	local result = handle:read("*a")
 	handle:close()
 
 	if result == "" then
-		vim.notify("Failed to retrieve credentials from 1Password:" .. item_name, vim.log.levels.ERROR)
+		vim.notify("Failed to retrieve credentials from 1Password:" .. opcmd, vim.log.levels.ERROR)
 		return nil
 	end
 
