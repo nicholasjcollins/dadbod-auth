@@ -9,6 +9,22 @@ local function resolve_item_name(alias_or_item)
 end
 
 local function fetch_db_credentials(item_name)
+	local env = "OP_SESSION_" .. config.options.account
+	local session = os.getenv(env)
+	if not session then
+		local handle = io.popen("op signin --quiet")
+		local result = handle.read("*a")
+		handle:close()
+
+		-- Extract Token
+		local token = result:match("Your session token is: (.+)")
+		if token then
+			os.setenv(env, token)
+		else
+			vim.notify("Failed to retrieve session token", vim.log.levels.ERROR)
+			return nil
+		end
+	end
 	local opcmd = "op item get '"
 		.. item_name
 		.. "' --fields label=type,label=username,label=password,label=dbname,label=host --format json"
