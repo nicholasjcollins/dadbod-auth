@@ -28,11 +28,11 @@ local function fetch_db_credentials(item_name)
 		return nil
 	end
 
-	local type = credential_data.[1].value
-	local username = credential_data.[2].value
-	local password = credential_data.[3].value
-	local dbname = credential_data.[4].value
-	local host = credential_data.[5].value
+	local type = credential_data[1].value
+	local username = credential_data[2].value
+	local password = credential_data[3].value
+	local dbname = credential_data[4].value
+	local host = credential_data[5].value
 
 	return {
 		type = type,
