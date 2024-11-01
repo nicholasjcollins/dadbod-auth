@@ -60,11 +60,4 @@ function M.setup_db_connection(item_name)
 	vim.notify("Connected to the database with vim-dadbod!", vim.log.levels.INFO)
 end
 
-vim.api.nvim_create_user_command("DBConnect", function(opts)
-	M.setup_db_connection(opts.args)
-end, {
-	nargs = 1, -- requires an argument (the name of the 1Password item)
-	desc = "Connect to a database using vim-dadbod and 1Password",
-})
-
 return M
