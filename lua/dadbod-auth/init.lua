@@ -18,7 +18,7 @@ local function fetch_db_credentials(item_name)
 	handle:close()
 
 	if result == "" then
-		vim.notify("Failed to retrieve credentials from 1Password", vim.log.levels.ERROR)
+		vim.notify("Failed to retrieve credentials from 1Password:" .. item_name, vim.log.levels.ERROR)
 		return nil
 	end
 
