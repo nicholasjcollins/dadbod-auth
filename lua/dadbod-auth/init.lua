@@ -12,7 +12,7 @@ local function fetch_db_credentials(item_name)
 	local handle = io.popen(
 		"op item get '"
 			.. item_name
-			.. "'--fields label=servertype,label=username,label=password,label=dbname,label=host --format json"
+			.. "' --fields label=type,label=username,label=password,label=dbname,label=host --format json"
 	)
 	local result = handle:read("*a")
 	handle:close()
