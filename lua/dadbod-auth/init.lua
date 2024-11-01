@@ -13,7 +13,7 @@ local function fetch_db_credentials(item_name)
 	local session = os.getenv(env)
 	if not session then
 		local handle = io.popen("op signin --quiet")
-		local result = handle.read("*a")
+		local result = handle:read("*a")
 		handle:close()
 
 		-- Extract Token
