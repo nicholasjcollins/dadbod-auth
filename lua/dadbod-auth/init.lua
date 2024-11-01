@@ -9,12 +9,9 @@ local function resolve_item_name(alias_or_item)
 end
 
 local function fetch_db_credentials(item_name)
-	local handle = io.popen("op signin")
-	local result = handle:read("*a")
-	handle:close()
-	local opcmd = "op item get '"
+	local opcmd = 'op item get "'
 		.. item_name
-		.. "' --fields label=type,label=username,label=password,label=dbname,label=host --format json"
+		.. '" --fields label=type,label=username,label=password,label=dbname,label=host --format json'
 	handle = io.popen(opcmd)
 	result = handle:read("*a")
 	handle:close()
