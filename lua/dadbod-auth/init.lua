@@ -1,19 +1,33 @@
 local config = require("dadbod-auth.config")
 local M = {}
 
+local default_types = {
+  mysql = { header = "mysql", suppress_pw = true, pw_env_var = "MYSQL_PWD", },
+  mssqlserver = { header = "sqlserver", },
+  mssqlserverentra = { header = "sqlserver", params = "authentication=ActiveDirectoryAzCli'"},
+  oracle = { header = "oracle", },
+  postgresql = { header = "postgresql" },
+}
+
 config.options = config.options or {}
 config.options.aliases = config.options.aliases or {}
+config.options.custom_types = config.options.custom_types or {}
 
 local function resolve_item_name(alias_or_item)
 	return config.options.aliases[alias_or_item] or alias_or_item
+end
+
+local function normalize_type(type)
+    local remove_spaces = string.gsub(type, "[^w_]", "")
+    return string.lower(remove_spaces)
 end
 
 local function fetch_db_credentials(item_name)
 	local opcmd = 'op item get "'
 		.. item_name
 		.. '" --fields label=type,label=username,label=password,label=dbname,label=host --format json'
-	handle = io.popen(opcmd)
-	result = handle:read("*a")
+	local handle = io.popen(opcmd)
+	local result = handle:read("*a")
 	handle:close()
 
 	if result == "" then
@@ -34,8 +48,17 @@ local function fetch_db_credentials(item_name)
 	local dbname = credential_data[4].value
 	local host = credential_data[5].value
 
+    -- Check if database type is valid
+    local nt = normalize_type(type)
+    local type_data = config.options.custom_types[nt]
+    if type_data == nil then type_data = default_types[nt] end
+    if type_data == nil then
+        vim.notify("No adapter info found for database type:" .. type, vim.log.levels.ERROR)
+        return nil
+    end
+
 	return {
-		type = type,
+		type = type_data,
 		username = username,
 		password = password,
 		dbname = dbname,
@@ -49,14 +72,19 @@ function M.setup_db_connection(item_name)
 	if not creds then
 		return
 	end
-
-	-- Create a vim-dadbod connection string
-	local db_string =
-		string.format("%s://%s:%s@%s/%s", creds.type, creds.username, creds.password, creds.host, creds.dbname)
-
+    local db_string = string.format("%s://", creds.type)
+    local server_prefix = ""
+    if not creds.type.suppress_user then
+        db_string = db_string .. creds.username
+        server_prefix = '@'
+    end
+    if creds.type.pw_env_var then vim.env[creds.type.pw_env_var] = creds.password end
+    if not creds.type.suppress_pw then db_string = db_string .. ':' .. creds.password end
+    db_string = db_string .. string.format("%s%s/%s", server_prefix, creds.host, creds.db_name)
+    if creds.type.params then db_string = db_string .. '?' .. creds.type.params end
 	-- Set the connection for vim-dadbod
-	vim.g.db = db_string
-	vim.notify("Connected to the database with vim-dadbod!", vim.log.levels.INFO)
+	vim.t.db = db_string
+	vim.notify("database credentials configured!", vim.log.levels.INFO)
 end
 
 return M
