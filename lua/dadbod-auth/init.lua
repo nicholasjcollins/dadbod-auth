@@ -24,7 +24,7 @@ local function resolve_item_name(alias_or_item)
 end
 
 local function normalize_type(type)
-    local remove_spaces = string.gsub(type, "[^w_]", "")
+    local remove_spaces = string.gsub(type, "[^%w_]", "")
     return string.lower(remove_spaces)
 end
 
