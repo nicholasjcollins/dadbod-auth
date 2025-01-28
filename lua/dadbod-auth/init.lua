@@ -13,6 +13,12 @@ config.options = config.options or {}
 config.options.aliases = config.options.aliases or {}
 config.options.custom_types = config.options.custom_types or {}
 
+local function url_encode(str)
+    return str:gsub("[^%w%-._~]", function(c)
+        return string.format("%%%02X", string.byte(c))
+    end)
+end
+
 local function resolve_item_name(alias_or_item)
 	return config.options.aliases[alias_or_item] or alias_or_item
 end
@@ -23,9 +29,10 @@ local function normalize_type(type)
 end
 
 local function fetch_db_credentials(item_name)
-	local opcmd = 'op item get "'
+    local ext = config.options.force_exe and '.exe' or ''
+	local opcmd = string.format('op%s item get "', ext)
 		.. item_name
-		.. '" --fields label=type,label=username,label=password,label=dbname,label=host --format json'
+		.. '" --fields label=type,label=username,label=password,label=dbname,label=server --format json'
 	local handle = io.popen(opcmd)
 	local result = handle:read("*a")
 	handle:close()
@@ -72,14 +79,14 @@ function M.setup_db_connection(item_name)
 	if not creds then
 		return
 	end
-    local db_string = string.format("%s://", creds.type)
+    local db_string = string.format("%s://", creds.type.header)
     local server_prefix = ""
     if not creds.type.suppress_user then
         db_string = db_string .. creds.username
         server_prefix = '@'
     end
     if creds.type.pw_env_var then vim.env[creds.type.pw_env_var] = creds.password
-    elseif not creds.type.suppress_pw  then db_string = db_string .. ':' .. creds.password end
+    elseif not creds.type.suppress_pw  then db_string = db_string .. ':' .. url_encode(creds.password) end
     db_string = db_string .. string.format("%s%s/%s", server_prefix, creds.host, creds.db_name)
     if creds.type.params then db_string = db_string .. '?' .. creds.type.params end
 	-- Set the connection for vim-dadbod
