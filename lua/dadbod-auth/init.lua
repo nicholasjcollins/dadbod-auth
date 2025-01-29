@@ -4,7 +4,7 @@ local M = {}
 local default_types = {
   mysql = { header = "mysql", suppress_pw = true, pw_env_var = "MYSQL_PWD", },
   mssqlserver = { header = "sqlserver", },
-  mssqlserverentra = { header = "sqlserver", suppress_pw = true, params = "authentication=ActiveDirectoryAzCli'"},
+  mssqlserverentra = { header = "sqlserver", suppress_pw = true, params = "authentication=ActiveDirectoryAzCli"},
   oracle = { header = "oracle", },
   postgresql = { header = "postgresql" },
 }
