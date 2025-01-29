@@ -82,11 +82,11 @@ function M.setup_db_connection(item_name)
     local db_string = string.format("%s://", creds.type.header)
     local server_prefix = ""
     if not creds.type.suppress_user then
-        db_string = db_string .. creds.username .. ':'
+        db_string = db_string .. creds.username
         server_prefix = '@'
     end
     if creds.type.pw_env_var then vim.env[creds.type.pw_env_var] = creds.password
-    elseif not creds.type.suppress_pw  then db_string = db_string ..  url_encode(creds.password) end
+    elseif not creds.type.suppress_pw  then db_string = db_string .. ':' .. url_encode(creds.password) end
     db_string = db_string .. string.format("%s%s/%s", server_prefix, creds.host, creds.dbname)
     if creds.type.params then db_string = db_string .. '?' .. creds.type.params end
 	-- Set the connection for vim-dadbod
