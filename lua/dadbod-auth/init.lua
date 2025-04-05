@@ -42,7 +42,6 @@ local function fetch_db_credentials(item_name)
 		return nil
 	end
 
-	-- Parse the JSON response to extract username, password, and host
 	local ok, credential_data = pcall(vim.fn.json_decode, result)
 	if not ok then
 		vim.notify("Error decoding 1Password response", vim.log.levels.ERROR)
@@ -89,7 +88,7 @@ function M.setup_db_connection(item_name)
         if type_data.pw_env_var then vim.env[type_data.pw_env_var] = creds.password
         elseif not type_data.suppress_pw  then db_string = db_string .. ':' .. url_encode(creds.password) end
     end
-    db_string = db_string .. string.format("%s%s/%s", server_prefix, creds.host, creds.database)
+    db_string = db_string .. string.format("%s%s/%s", server_prefix, creds.server, creds.database)
     if creds.port then
         db_string = db_string .. string.format(":%s", creds.port)
     end
