@@ -101,45 +101,71 @@ local function change_target_db(new_db)
     vim.t.database_credentials.database = new_db
 end
 
+
 local function get_database_list()
-    if not vim.t.db then
+    if not vim.t.database_credentials then
         vim.notify("No active database connection", vim.log.levels.WARN)
         return nil
     end
+    
     local creds = vim.t.database_credentials
-    if not creds then return nil end
     local type_data = get_type_data(creds.type)
     if not type_data then return nil end
+    
     local queries = {
         sqlserver = "SELECT name FROM sys.databases WHERE database_id > 4 ORDER BY name",
         mysql = "SHOW DATABASES",
         postgresql = "SELECT datname FROM pg_database WHERE datistemplate = false ORDER BY datname",
-        oracle = "SELECT name FROM v$database", -- Oracle typically connects to one DB
     }
+    
     local query = queries[type_data.header]
     if not query then
         vim.notify("Database listing not supported for type: " .. creds.type, vim.log.levels.WARN)
         return nil
     end
-    -- Execute via dadbod
-    local result = vim.fn['db#execute_query'](query, vim.t.db)
-    if not result or result == "" then
-        vim.notify("Failed to retrieve database list", vim.log.levels.ERROR)
+    
+    -- Build command based on database type
+    local cmd
+    if type_data.header == "sqlserver" then
+        cmd = string.format('sqlcmd -S %s -U %s -P "%s" -d %s -h -1 -W -Q "%s"',
+            creds.server, creds.username or "", creds.password or "", creds.database, query)
+    elseif type_data.header == "mysql" then
+        -- Set MYSQL_PWD environment variable for mysql
+        vim.env.MYSQL_PWD = creds.password
+        cmd = string.format('mysql -h %s -u %s -sN -e "%s"',
+            creds.server, creds.username, query)
+    elseif type_data.header == "postgresql" then
+        cmd = string.format('PGPASSWORD="%s" psql -h %s -U %s -d %s -t -A -c "%s"',
+            creds.password, creds.server, creds.username, creds.database, query)
+    end
+    
+    if not cmd then return nil end
+    
+    local handle = io.popen(cmd)
+    if not handle then
+        vim.notify("Failed to execute database query", vim.log.levels.ERROR)
         return nil
     end
-    -- Parse result - db#execute_query returns newline-separated values
+    
+    local result = handle:read("*a")
+    handle:close()
+    
+    if not result or result == "" then
+        vim.notify("No databases found", vim.log.levels.WARN)
+        return nil
+    end
+    
+    -- Parse results
     local databases = {}
     for line in result:gmatch("[^\r\n]+") do
-        -- Skip header and separator lines
-        if not line:match("^name") and not line:match("^Database") and 
-           not line:match("^datname") and not line:match("^%-+") and 
-           line:match("%S") then
-            table.insert(databases, line:match("^%s*(.-)%s*$")) -- trim whitespace
+        local trimmed = line:match("^%s*(.-)%s*$")
+        if trimmed and trimmed ~= "" then
+            table.insert(databases, trimmed)
         end
     end
+    
     return databases
 end
-
 
 function M.swap_db(db_name)
     if db_name and db_name ~= "" then
