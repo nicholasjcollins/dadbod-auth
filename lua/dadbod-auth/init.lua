@@ -93,13 +93,13 @@ local function build_connection_string()
     if type_data.params then db_string = db_string .. '?' .. type_data.params end
 	-- Set the connection for vim-dadbod
 	vim.t.db = db_string
-	vim.notify("database credentials configured!", vim.log.levels.INFO)
 end
 
 local function change_target_db(new_db)
     if not vim.t.database_credentials or not new_db then return end
     vim.t.target_database = new_db
     build_connection_string()
+    vim.notify("Switched to database: " .. new_db, vim.log.levels.INFO)
 end
 
 
@@ -161,7 +161,6 @@ end
 function M.swap_db(db_name)
     if db_name and db_name ~= "" then
         change_target_db(db_name)
-        vim.notify("Switched to database: " .. db_name, vim.log.levels.INFO)
         return
     end
     if not has_telescope() then
@@ -197,7 +196,6 @@ function M.swap_db(db_name)
                 local selection = action_state.get_selected_entry()
                 if selection then
                     change_target_db(selection.value)
-                    vim.notify("Switched to database: " .. selection.value, vim.log.levels.INFO)
                 end
             end)
             return true
@@ -210,6 +208,7 @@ function M.setup_db_connection(item_name)
     vim.t.database_credentials = fetch_db_credentials(vault_item_name)
     vim.t.target_database = vim.t.database_credentials.database
     build_connection_string()
+	vim.notify("database credentials configured!", vim.log.levels.INFO)
 end
 
 return M
