@@ -47,16 +47,16 @@ local function fetch_db_credentials(item_name)
 		vim.notify("Error decoding 1Password response", vim.log.levels.ERROR)
 		return nil
 	end
-
-    vim.t.database_credentials = {}
-
+    local c = {}
     if credential_data.fields then
         for _, field in ipairs(credential_data.fields) do
             if field.label and field.value then
-                vim.t.database_credentials[field.label] = field.value
+                c[field.label] = field.value
             end
         end
     end
+    return c
+
 end
 
 local function get_type_data(type_string)
@@ -183,7 +183,7 @@ end
 
 function M.setup_db_connection(item_name)
     local vault_item_name = config.options.aliases[item_name] or item_name
-    fetch_db_credentials(vault_item_name)
+    vim.t.database_credentials = fetch_db_credentials(vault_item_name)
     build_connection_string()
 end
 
