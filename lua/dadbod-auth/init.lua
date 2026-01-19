@@ -99,6 +99,7 @@ end
 local function change_target_db(new_db)
     if not vim.t.database_credentials or not new_db then return end
     vim.t.database_credentials.database = new_db
+    build_connection_string()
 end
 
 
@@ -107,23 +108,19 @@ local function get_database_list()
         vim.notify("No active database connection", vim.log.levels.WARN)
         return nil
     end
-    
     local creds = vim.t.database_credentials
     local type_data = get_type_data(creds.type)
     if not type_data then return nil end
-    
     local queries = {
         sqlserver = "SELECT name FROM sys.databases WHERE database_id > 4 ORDER BY name",
         mysql = "SHOW DATABASES",
         postgresql = "SELECT datname FROM pg_database WHERE datistemplate = false ORDER BY datname",
     }
-    
     local query = queries[type_data.header]
     if not query then
         vim.notify("Database listing not supported for type: " .. creds.type, vim.log.levels.WARN)
         return nil
     end
-    
     -- Build command based on database type
     local cmd
     if type_data.header == "sqlserver" then
@@ -138,23 +135,18 @@ local function get_database_list()
         cmd = string.format('PGPASSWORD="%s" psql -h %s -U %s -d %s -t -A -c "%s"',
             creds.password, creds.server, creds.username, creds.database, query)
     end
-    
     if not cmd then return nil end
-    
     local handle = io.popen(cmd)
     if not handle then
         vim.notify("Failed to execute database query", vim.log.levels.ERROR)
         return nil
     end
-    
     local result = handle:read("*a")
     handle:close()
-    
     if not result or result == "" then
         vim.notify("No databases found", vim.log.levels.WARN)
         return nil
     end
-    
     -- Parse results
     local databases = {}
     for line in result:gmatch("[^\r\n]+") do
@@ -163,7 +155,6 @@ local function get_database_list()
             table.insert(databases, trimmed)
         end
     end
-    
     return databases
 end
 
@@ -198,7 +189,8 @@ function M.swap_db(db_name)
                 actions.close(prompt_bufnr)
                 local selection = action_state.get_selected_entry()
                 if selection then
-                    change_target_db(selection[1])
+                    local new_db = selection.value or selection[1]
+                    change_target_db(new_db)
                     vim.notify("Switched to database: " .. selection[1], vim.log.levels.INFO)
                 end
             end)
