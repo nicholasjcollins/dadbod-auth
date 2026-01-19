@@ -71,7 +71,7 @@ local function build_connection_string()
     local creds = vim.t.database_credentials
     local type_data = get_type_data(creds.type)
     if type_data == nil then
-        vim.notify("No adapter info found for database type: " .. type, vim.log.levels.ERROR)
+        vim.notify("No adapter info found for database type: " .. creds.type, vim.log.levels.ERROR)
         return
     end
 
