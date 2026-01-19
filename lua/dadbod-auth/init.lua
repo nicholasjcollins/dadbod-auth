@@ -182,6 +182,13 @@ function M.swap_db(db_name)
         prompt_title = 'Switch Database',
         finder = finders.new_table({
             results = databases,
+            entry_maker = function(entry)
+                return {
+                value = entry,
+                display = entry,
+                ordinal = entry,
+            }
+            end,
         }),
         sorter = conf.generic_sorter({}),
         attach_mappings = function(prompt_bufnr, map)
@@ -189,8 +196,7 @@ function M.swap_db(db_name)
                 actions.close(prompt_bufnr)
                 local selection = action_state.get_selected_entry()
                 if selection then
-                    local new_db = selection.value or selection[1]
-                    change_target_db(new_db)
+                    change_target_db(selection.value)
                     vim.notify("Switched to database: " .. selection[1], vim.log.levels.INFO)
                 end
             end)
