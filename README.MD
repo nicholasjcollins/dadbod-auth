@@ -4,7 +4,7 @@
 
 ```lua
 use {
-  'nick/dadbod-auth',
+  'nicholasjcollins/dadbod-auth',
   config = function()
     require('dadbod-auth').setup({
       -- user options
@@ -36,7 +36,7 @@ All items in your vault that you wish to use as database connections will use th
 
 ### Configuration in Neovim
 ```lua
-  'nick/dadbod-auth',
+  'nicholasjcollins/dadbod-auth',
   config = function()
     require('dadbod-auth').setup({
       -- user options
