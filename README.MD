@@ -18,6 +18,12 @@ use {
 ```
 
 ## Example Usage
+### Authenticating to a particular server
+`:DBA alias`
+### Swapping target database
+`:DBS database-name` or just `:DBS` to open a picker (requires Telescope)
+
+
 ## Configuration
 ### In 1Password
 You need to have the 1Password CLI configured and installed for this to work.
